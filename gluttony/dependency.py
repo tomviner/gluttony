@@ -15,6 +15,7 @@ def trace_dependencies(req, requirement_set, dependencies, _visited=None):
     _visited = _visited or set()
     if req in _visited:
         return
+
     _visited.add(req)
     for reqName in req.requirements():
         try:

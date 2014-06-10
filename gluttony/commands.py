@@ -1,9 +1,11 @@
 from __future__ import unicode_literals
 import sys
 import os
-import optparse
 import json
 
+from pip import cmdoptions
+
+from pip.basecommand import Command
 from pip.log import logger
 from pip.index import PackageFinder
 from pip.req import RequirementSet, InstallRequirement, parse_requirements
@@ -22,11 +24,18 @@ def pretty_project_name(req):
     return '%s-%s' % (req.name, req.installed_version)
 
 
-class Command(object):
+class DependencyChecker(Command):
     bundle = False
+    name = 'dependency'
 
-    def __init__(self):
-        self.parser = optparse.OptionParser(version="%prog " + __version__)
+    def __init__(self, *args, **kw):
+        super(DependencyChecker, self).__init__(*args, **kw)
+
+        self.cmd_opts.add_option(cmdoptions.requirements.make())
+        self.cmd_opts.add_option(cmdoptions.build_dir.make())
+        self.cmd_opts.add_option(cmdoptions.download_cache.make())
+
+        # cmdoptions.editable exist in pip's git
         self.parser.add_option(
             '-e', '--editable',
             dest='editables',
@@ -38,101 +47,63 @@ class Command(object):
             'setup.py develop). You can run this on an existing directory/checkout (like '
             'pip install -e src/mycheckout). This option may be provided multiple times. '
             'Possible values for VCS are: svn, git, hg and bzr.')
-        self.parser.add_option(
-            '-r', '--requirement',
-            dest='requirements',
-            action='append',
-            default=[],
-            metavar='FILENAME',
-            help='Install all the packages listed in the given requirements file.  '
-            'This option can be used multiple times.')
-        self.parser.add_option(
-            '-f', '--find-links',
-            dest='find_links',
-            action='append',
-            default=[],
-            metavar='URL',
-            help='URL to look for packages at')
-        self.parser.add_option(
-            '-i', '--index-url', '--pypi-url',
-            dest='index_url',
-            metavar='URL',
-            default='http://pypi.python.org/simple',
-            help='Base URL of Python Package Index (default %default)')
-        self.parser.add_option(
-            '--extra-index-url',
-            dest='extra_index_urls',
-            metavar='URL',
-            action='append',
-            default=[],
-            help='Extra URLs of package indexes to use in addition to --index-url')
-        self.parser.add_option(
-            '--no-index',
-            dest='no_index',
-            action='store_true',
-            default=False,
-            help='Ignore package index (only looking at --find-links URLs instead)')
-        self.parser.add_option(
-            '-b', '--build', '--build-dir', '--build-directory',
-            dest='build_dir',
-            metavar='DIR',
-            default=None,
-            help='Unpack packages into DIR (default %s) and build from there' % build_prefix)
-        self.parser.add_option(
+
+        self.cmd_opts.add_option(
             '-d', '--download', '--download-dir', '--download-directory',
             dest='download_dir',
             metavar='DIR',
             default=None,
             help='Download packages into DIR instead of installing them')
-        self.parser.add_option(
-            '--download-cache',
-            dest='download_cache',
-            metavar='DIR',
-            default=None,
-            help='Cache downloaded packages in DIR')
-        self.parser.add_option(
+        self.cmd_opts.add_option(
             '--src', '--source', '--source-dir', '--source-directory',
             dest='src_dir',
             metavar='DIR',
             default=None,
             help='Check out --editable packages into DIR (default %s)' % src_prefix)
-        self.parser.add_option(
+        self.cmd_opts.add_option(
             '-U', '--upgrade',
             dest='upgrade',
             action='store_true',
             help='Upgrade all packages to the newest available version')
-        self.parser.add_option(
+        self.cmd_opts.add_option(
             '-I', '--ignore-installed',
             dest='ignore_installed',
             action='store_true',
             help='Ignore the installed packages (reinstalling instead)')
 
         # options for output
-        self.parser.add_option(
+        self.cmd_opts.add_option(
             '-j', '--json',
             dest='json_file',
             metavar='FILE',
             help='JSON filename for result output')
-        self.parser.add_option(
+        self.cmd_opts.add_option(
             '--pydot',
             dest='py_dot',
             metavar='FILE',
             help='Output dot file with pydot')
-        self.parser.add_option(
+        self.cmd_opts.add_option(
             '--pygraphviz',
             dest='py_graphviz',
             metavar='FILE',
             help='Output dot file with PyGraphviz')
-        self.parser.add_option(
+        self.cmd_opts.add_option(
             '--display', '--display-graph',
             dest='display_graph',
             action='store_true',
             help='Display graph with Networkx and matplotlib')
-        self.parser.add_option(
+        self.cmd_opts.add_option(
             '-R', '--reverse',
             dest='reverse',
             action='store_true',
             help='Reverse the direction of edge')
+
+        index_opts = cmdoptions.make_option_group(
+            cmdoptions.index_group,
+            self.parser,
+        )
+
+        self.parser.insert_option_group(0, index_opts)
 
     def run(self, options, args):
         if not options.build_dir:
@@ -145,13 +116,15 @@ class Command(object):
         else:
             options.build_dir = os.path.abspath(options.build_dir)
             options.src_dir = os.path.abspath(options.src_dir)
+        session = self._build_session(options)
         index_urls = [options.index_url] + options.extra_index_urls
         if options.no_index:
             logger.notify('Ignoring indexes: %s' % ','.join(index_urls))
             index_urls = []
         finder = PackageFinder(
             find_links=options.find_links,
-            index_urls=index_urls)
+            index_urls=index_urls,
+            session=session)
         requirement_set = RequirementSet(
             build_dir=options.build_dir,
             src_dir=options.src_dir,
@@ -275,7 +248,7 @@ class Command(object):
 
 
 def main():
-    command = Command()
+    command = DependencyChecker()
     command.main(sys.argv[1:])
 
 if __name__ == '__main__':
