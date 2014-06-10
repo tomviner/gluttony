@@ -15,16 +15,16 @@ from version import __version__
 
 def pretty_project_name(req):
     """Get project name in a pretty form:
-    
+
     name-version
-    
+
     """
     return '%s-%s' % (req.name, req.installed_version)
 
 
 class Command(object):
     bundle = False
-    
+
     def __init__(self):
         self.parser = optparse.OptionParser(version="%prog " + __version__)
         self.parser.add_option(
@@ -106,7 +106,7 @@ class Command(object):
             dest='ignore_installed',
             action='store_true',
             help='Ignore the installed packages (reinstalling instead)')
-        
+
         # options for output
         self.parser.add_option(
             '-j', '--json',
@@ -161,7 +161,7 @@ class Command(object):
             ignore_installed=options.ignore_installed,
             ignore_dependencies=False,
         )
-        
+
         for name in args:
             requirement_set.add_requirement(
                 InstallRequirement.from_line(name, None))
@@ -171,13 +171,13 @@ class Command(object):
         for filename in options.requirements:
             for req in parse_requirements(filename, finder=finder, options=options):
                 requirement_set.add_requirement(req)
-        
+
         requirement_set.prepare_files(
-            finder, 
-            force_root_egg_info=self.bundle, 
+            finder,
+            force_root_egg_info=self.bundle,
             bundle=self.bundle,
         )
-        
+
         return requirement_set
 
     def _output_json(self, json_file, dependencies):
@@ -203,38 +203,38 @@ class Command(object):
                 packages=json_packages,
                 dependencies=json_deps,
             ), jfile, sort_keys=True, indent=4, separators=(',', ': '))
-    
+
     def output(self, options, args, dependencies):
         """Output result
-        
+
         """
         if options.reverse:
             dependencies = map(lambda x: x[::-1], dependencies)
-        
+
         if options.json_file:
             self._output_json(options.json_file, dependencies)
-            logger.notify("Dependencies relationships result is in %s now", 
+            logger.notify("Dependencies relationships result is in %s now",
                           options.json_file)
-        
+
         if options.display_graph or options.py_dot or options.py_graphviz:
             import networkx as nx
 
             # extract name and version
             def convert(pair):
                 return (
-                    pretty_project_name(pair[0]), 
+                    pretty_project_name(pair[0]),
                     pretty_project_name(pair[1]),
                 )
             plain_dependencies = map(convert, dependencies)
             dg = nx.DiGraph()
             dg.add_edges_from(plain_dependencies)
             if options.py_dot:
-                logger.notify("Writing dot to %s with Pydot ...", 
+                logger.notify("Writing dot to %s with Pydot ...",
                               options.py_dot)
                 from networkx.drawing.nx_pydot import write_dot
                 write_dot(dg, options.py_dot)
             if options.py_graphviz:
-                logger.notify("Writing dot to %s with PyGraphviz ...", 
+                logger.notify("Writing dot to %s with PyGraphviz ...",
                               options.py_graphviz)
                 from networkx.drawing.nx_agraph import write_dot
                 write_dot(dg, options.py_graphviz)
@@ -246,13 +246,13 @@ class Command(object):
                 else:
                     nx.draw(dg)
                     plt.show()
-    
+
     def main(self, args):
         options, args = self.parser.parse_args(args)
         if not args:
             self.parser.print_help()
             return
-        
+
         level = 1  # Notify
         logger.level_for_integer(level)
         logger.consumers.extend([(level, sys.stdout)])
@@ -277,6 +277,6 @@ class Command(object):
 def main():
     command = Command()
     command.main(sys.argv[1:])
-        
+
 if __name__ == '__main__':
     main()

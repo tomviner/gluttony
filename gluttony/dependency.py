@@ -6,7 +6,7 @@ from pip.log import logger
 
 def trace_dependencies(req, requirement_set, dependencies, _visited=None):
     """Trace all dependency relationship
-    
+
     @param req: requirements to trace
     @param requirement_set: RequirementSet
     @param dependencies: list for storing dependencies relationships
