@@ -108,6 +108,22 @@ class DependencyChecker(Command):
 
         self.parser.insert_option_group(0, index_opts)
 
+    def _build_package_finder(self, options, index_urls, session):
+        """
+        Create a package finder appropriate to this install command.
+        This method is meant to be overridden by subclasses, not
+        called directly.
+        """
+        return PackageFinder(
+            use_wheel=False,
+            find_links=options.find_links,
+            index_urls=index_urls,
+            allow_external=options.allow_external,
+            allow_unverified=options.allow_unverified,
+            allow_all_external=options.allow_all_external,
+            session=session,
+        )
+
     def run(self, options, args):
         if not options.build_dir:
             options.build_dir = build_prefix
@@ -124,10 +140,7 @@ class DependencyChecker(Command):
         if options.no_index:
             logger.notify('Ignoring indexes: %s' % ','.join(index_urls))
             index_urls = []
-        finder = PackageFinder(
-            find_links=options.find_links,
-            index_urls=index_urls,
-            session=session)
+        finder = self._build_package_finder(options, index_urls, session)
         requirement_set = RequirementSet(
             build_dir=options.build_dir,
             src_dir=options.src_dir,
@@ -136,6 +149,7 @@ class DependencyChecker(Command):
             upgrade=options.upgrade,
             ignore_installed=options.ignore_installed,
             ignore_dependencies=False,
+            session=session,
         )
 
         for name in args:
