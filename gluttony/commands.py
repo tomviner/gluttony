@@ -31,6 +31,9 @@ class DependencyChecker(Command):
     def __init__(self, *args, **kw):
         super(DependencyChecker, self).__init__(*args, **kw)
 
+        # fix prog name to be gluttony instead of pip dependancy
+        self.parser.prog = 'gluttony'
+
         self.cmd_opts.add_option(cmdoptions.requirements.make())
         self.cmd_opts.add_option(cmdoptions.build_dir.make())
         self.cmd_opts.add_option(cmdoptions.download_cache.make())
