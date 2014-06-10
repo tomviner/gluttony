@@ -27,7 +27,7 @@ def trace_dependencies(req, requirement_set, dependencies, _visited=None):
         try:
             subreq = requirement_set.get_requirement(name)
         except KeyError:
-            logger.warn("Dependancy %s not found", name)
+            logger.warn("Dependency %s not found", name)
             continue
         dependencies.append((req, subreq))
         trace_dependencies(subreq, requirement_set, dependencies, _visited)
