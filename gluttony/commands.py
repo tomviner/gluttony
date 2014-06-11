@@ -51,51 +51,51 @@ class DependencyChecker(Command):
             'pip install -e src/mycheckout). This option may be provided multiple times. '
             'Possible values for VCS are: svn, git, hg and bzr.')
 
-        self.cmd_opts.add_option(
+        self.parser.add_option(
             '-d', '--download', '--download-dir', '--download-directory',
             dest='download_dir',
             metavar='DIR',
             default=None,
             help='Download packages into DIR instead of installing them')
-        self.cmd_opts.add_option(
+        self.parser.add_option(
             '--src', '--source', '--source-dir', '--source-directory',
             dest='src_dir',
             metavar='DIR',
             default=None,
             help='Check out --editable packages into DIR (default %s)' % src_prefix)
-        self.cmd_opts.add_option(
+        self.parser.add_option(
             '-U', '--upgrade',
             dest='upgrade',
             action='store_true',
             help='Upgrade all packages to the newest available version')
-        self.cmd_opts.add_option(
+        self.parser.add_option(
             '-I', '--ignore-installed',
             dest='ignore_installed',
             action='store_true',
             help='Ignore the installed packages (reinstalling instead)')
 
         # options for output
-        self.cmd_opts.add_option(
+        self.parser.add_option(
             '-j', '--json',
             dest='json_file',
             metavar='FILE',
             help='JSON filename for result output')
-        self.cmd_opts.add_option(
+        self.parser.add_option(
             '--pydot',
             dest='py_dot',
             metavar='FILE',
             help='Output dot file with pydot')
-        self.cmd_opts.add_option(
+        self.parser.add_option(
             '--pygraphviz',
             dest='py_graphviz',
             metavar='FILE',
             help='Output dot file with PyGraphviz')
-        self.cmd_opts.add_option(
+        self.parser.add_option(
             '--display', '--display-graph',
             dest='display_graph',
             action='store_true',
             help='Display graph with Networkx and matplotlib')
-        self.cmd_opts.add_option(
+        self.parser.add_option(
             '-R', '--reverse',
             dest='reverse',
             action='store_true',
