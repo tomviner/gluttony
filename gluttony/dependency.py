@@ -20,7 +20,7 @@ def trace_dependencies(req, requirement_set, dependencies, _visited=None):
     for reqName in req.requirements():
         try:
             name = pkg_resources.Requirement.parse(reqName).project_name
-        except ValueError, e:
+        except ValueError as e:
             logger.error('Invalid requirement: %r (%s) in requirement %s' % (
                 reqName, e, req))
             continue

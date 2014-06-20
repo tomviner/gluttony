@@ -11,8 +11,8 @@ from pip.index import PackageFinder
 from pip.req import RequirementSet, InstallRequirement, parse_requirements
 from pip.locations import build_prefix, src_prefix
 
-from dependency import trace_dependencies
-from version import __version__
+from .dependency import trace_dependencies
+from .version import __version__
 
 
 def pretty_project_name(req):
