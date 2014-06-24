@@ -82,6 +82,11 @@ class DependencyChecker(Command):
 
         # options for output
         self.parser.add_option(
+            '--dump',
+            dest='dump',
+            metavar='FILE',
+            help='dump dependancy by level')
+        self.parser.add_option(
             '-j', '--json',
             dest='json_file',
             metavar='FILE',
@@ -234,7 +239,7 @@ class DependencyChecker(Command):
 
         self.check_conflicts(dependencies)
 
-        if options.display_graph or options.py_dot or options.py_graphviz:
+        if options.display_graph or options.py_dot or options.py_graphviz or options.dump:
             import networkx as nx
 
             # extract name and version
@@ -246,6 +251,17 @@ class DependencyChecker(Command):
             plain_dependencies = map(convert, dependencies)
             dg = nx.DiGraph()
             dg.add_edges_from(plain_dependencies)
+
+            if options.dump:
+                dependancies_ordered = []
+                for n, nbrs in dg.adjacency_iter():
+                    for nbr, eattr in nbrs.items():
+                        dependancies_ordered.append(nbr)
+
+                dependancies_ordered = set(dependancies_ordered)
+                with open(options.dump, mode='wt') as myfile:
+                    myfile.write('\n'.join(dependancies_ordered))
+
             if options.py_dot:
                 logger.notify("Writing dot to %s with Pydot ...",
                               options.py_dot)
