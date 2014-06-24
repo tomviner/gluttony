@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 import sys
 import os
 import json
+import collections
 
 from pip import cmdoptions
 
@@ -194,10 +195,23 @@ class DependencyChecker(Command):
                 dependencies=json_deps,
             ), jfile, sort_keys=True, indent=4, separators=(',', ': '))
 
+    def check_conflicts(self, dependencies):
+        dependancies_flattened = collections.defaultdict(set)
+        for dep1, dep2 in dependencies:
+            if dep1.installed_version is not None:
+                dependancies_flattened[dep1.name].add(dep1.installed_version)
+            if dep2.installed_version is not None:
+                dependancies_flattened[dep2.name].add(dep2.installed_version)
+
+        for dependency_name, dependency_versions in dependancies_flattened.items():
+            if dependency_versions and len(dependency_versions) > 1:
+                print("Warning: This project requires %s in multiple versions:" % dependency_name, ",".join(dependency_versions))
+
     def output(self, options, args, dependencies):
         """Output result
 
         """
+
         if options.reverse:
             dependencies = map(lambda x: x[::-1], dependencies)
 
@@ -205,6 +219,8 @@ class DependencyChecker(Command):
             self._output_json(options.json_file, dependencies)
             logger.notify("Dependencies relationships result is in %s now",
                           options.json_file)
+
+        self.check_conflicts(dependencies)
 
         if options.display_graph or options.py_dot or options.py_graphviz:
             import networkx as nx
