@@ -22,6 +22,11 @@ def pretty_project_name(req):
     name-version
 
     """
+    try:
+        print(req.name, req.installed_version)
+    except Exception:
+        print("dep %s has a problem sire." % req.name)
+        return req.name
     return '%s-%s' % (req.name, req.installed_version)
 
 
@@ -198,10 +203,17 @@ class DependencyChecker(Command):
     def check_conflicts(self, dependencies):
         dependancies_flattened = collections.defaultdict(set)
         for dep1, dep2 in dependencies:
-            if dep1.installed_version is not None:
-                dependancies_flattened[dep1.name].add(dep1.installed_version)
-            if dep2.installed_version is not None:
-                dependancies_flattened[dep2.name].add(dep2.installed_version)
+            try:
+                if dep1.installed_version is not None:
+                    dependancies_flattened[dep1.name].add(dep1.installed_version)
+            except Exception:
+                print("%s has an unknown version" % dep1.name)
+
+            try:
+                if dep2.installed_version is not None:
+                    dependancies_flattened[dep2.name].add(dep2.installed_version)
+            except Exception:
+                print("%s has an unknown version" % dep2.name)
 
         for dependency_name, dependency_versions in dependancies_flattened.items():
             if dependency_versions and len(dependency_versions) > 1:
