@@ -1,2 +1,4 @@
 Pip>=0.8
 networkx>=1.0.1
+matplotlib
+

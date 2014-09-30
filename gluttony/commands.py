@@ -275,11 +275,12 @@ class DependencyChecker(Command):
             if options.display_graph:
                 import matplotlib.pyplot as plt
                 logger.notify("Drawing graph ...")
+
                 if not plain_dependencies:
                     logger.notify("There is no dependency to draw.")
                 else:
-                    nx.draw(dg)
-                    plt.show()
+                    pydot_graph = nx.drawing.to_pydot(dg)
+                    pydot_graph.write_png("dependency.png")
 
     def main(self, args):
         options, args = self.parser.parse_args(args)
