@@ -1,5 +1,5 @@
-Pip>=0.8
-networkx>=1.7
-matplotlib
-pydot
-
+Pip>=0.8,<2
+networkx<1.11
+matplotlib==1.5.3
+pydot==1.2.2
+pydotplus==2.0.2
