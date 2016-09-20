@@ -1,7 +1,10 @@
 from __future__ import unicode_literals
 
 import pkg_resources
-from pip.log import logger
+try:
+    from pip.log import logger
+except ImportError:
+    from pip import logger  # 6.0
 
 
 def trace_dependencies(req, requirement_set, dependencies, _visited=None):

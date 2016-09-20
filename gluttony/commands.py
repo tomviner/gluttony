@@ -7,7 +7,10 @@ import collections
 from pip import cmdoptions
 
 from pip.basecommand import Command
-from pip.log import logger
+try:
+    from pip.log import logger
+except ImportError:
+    from pip import logger  # 6.0
 from pip.index import PackageFinder
 from pip.req import RequirementSet, InstallRequirement, parse_requirements
 from pip.locations import build_prefix, src_prefix
